@@ -1,0 +1,20 @@
+{% extends 'index.html' %}
+
+{% block content %}
+  <h1>Search Subtitles</h1>
+  <form action="{% url 'search_subtitles_form' %}" method="get">
+    <div class="form-group">
+      <label for="keywords">Keywords:</label>
+      <input type="text" class="form-control" id="keywords" name="keywords" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  {% if search_results %}
+    <h2>Search Results</h2>
+    <ul>
+      {% for result in search_results %}
+        <li><a href="{% url 'view_video' result.video_id %}">{{ result.video_title }} ({{ result.timestamp }})</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
