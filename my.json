@@ -1,0 +1,56 @@
+[
+  {
+    "_id": "8vNQI4gBgLoXBnMgMylf",
+    "_index": "subtitle",
+    "_score": 0.2876821,
+    "_source": {
+      "content": "The subtitle content",
+      "start_time": "10:00:00",
+      "end_time": "10:10:00",
+      "video_url": "https://www.example.com/video.mp4"
+    }
+  },
+  {
+    "_id": "6_NRIIgBgLoXBnMgbiks",
+    "_index": "subtitle",
+    "_score": 0.2876821,
+    "_source": {
+      "content": "The subtitle content",
+      "start_time": "10:00:00",
+      "end_time": "10:10:00",
+      "video_url": "https://www.example.com/video.mp4"
+    }
+  },
+  {
+    "_id": "7vNaIIgBgLoXBnMgXykv",
+    "_index": "subtitle",
+    "_score": 0.2876821,
+    "_source": {
+      "content": "The subtitle content",
+      "start_time": "10:00:00",
+      "end_time": "10:10:00",
+      "video_url": "https://www.example.com/video.mp4"
+    }
+  },
+  {
+    "_id": "5",
+    "_index": "subtitle",
+    "_score": 0.18232156,
+    "_source": {
+      "content": "The subtitle content",
+      "start_time": "10:00:00",
+      "end_time": "10:10:00",
+      "video_url": "https://www.example.com/video.mp4"
+    }
+  },
+  {
+    "_id": "6vNRIIgBgLoXBnMgICnq",
+    "_index": "subtitle",
+    "_score": 0.18232156,
+    "_source": {
+      "content": "The subtitle content",
+      "start_time": "10:00:00",
+      "end_time": "10:10:00",
+      "video_url": "https://www.example.com/video.mp4"
+    }
+  }]

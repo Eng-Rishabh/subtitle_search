@@ -135,6 +135,7 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIME_ZONE = 'Asia/Kolkata'
 
 
 AWS_ACCESS_KEY_ID = 'AKIAWKL3DKQFFF2MJ2XJ'
@@ -148,8 +149,9 @@ AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 # DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-
-FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
-    # Other upload handlers...
-]
+# Tried using the django from django.core.files.uploadedfile import TemporaryUploadedFile but it deletes the file
+# after returning the response so celery is not able to perform anything we can write custome handlers to optomise this
+# FILE_UPLOAD_HANDLERS = [ 'django.core.files.uploadhandler.MemoryFileUploadHandler',
+# 'django.core.files.uploadhandler.TemporaryFileUploadHandler', # Other upload handlers... ]
+#
+# FILE_UPLOAD_TEMP_DIR = 'temp_upload'

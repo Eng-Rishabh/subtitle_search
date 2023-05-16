@@ -1,102 +1,40 @@
-# from dynamorm import DynaModel, ProjectAll
-# from marshmallow import fields, EXCLUDE
-# from django.conf import settings
-# import datetime
+from pynamodb.models import Model
 from myserver.settings import DB_TABLE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-import boto3
+from pynamodb.attributes import UnicodeAttribute
+from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
-READ_CAPACITY_UNIT = 20
 WRITE_CAPACITY_UNIT = 10
-# Create your models here.
+READ_CAPACITY_UNIT = 5
 
 
-# class Subtitle(DynaModel):
-#     class Table:
-#         session_kwargs = {
-#             "aws_access_key_id": settings.AWS_ACCESS_KEY_ID,
-#             "aws_secret_access_key": settings.AWS_SECRET_ACCESS_KEY,
-#             'region_name': 'ap-south-1'
-#         }
-#
-#         name = settings.DB_TABLE
-#         hash_key = 'content'
-#         read = READ_CAPACITY_UNIT
-#         write = WRITE_CAPACITY_UNIT
-#         projection = ProjectAll()
-#
-#     class Schema:
-#         content = fields.String()
-#         start_time = fields.String()
-#         end_time = fields.String()
-#         video_url = fields.String()
-#
-#         year = fields.Number(missing=lambda: datetime.datetime.utcnow().year)
+class Text(Model):
+    class Meta:
+        aws_access_key_id = AWS_ACCESS_KEY_ID
+        aws_secret_access_key = AWS_SECRET_ACCESS_KEY
+        region = 'ap-south-1'
+        table_name = DB_TABLE
 
-    # class Meta:
-    #     unknown = EXCLUDE
+    content = UnicodeAttribute(hash_key=True)
+    start_time = UnicodeAttribute(range_key=True)
+    end_time = UnicodeAttribute()
+    video_url = UnicodeAttribute()
 
-    # class MySchema(Schema):
+    # optional way to do without using the opensearch saving each non-stop words in the model and timestamp where
+    # they occur Define the Global Secondary Index then searchin on the word by word is enables which timestamp has
+    # greater no occurrence will be most relevant but per word query can be more than aws free tier read and write
+    # allotted rate so assignment requirement may not satisfy for the latency of 1 second.
+
+    # class SearchByWordIndex(GlobalSecondaryIndex):
     #     class Meta:
-    #         unknown = EXCLUDE
+    #         projection = AllProjection()
+    #         index_name = 'SearchByWord'
+    #
+    #     word = UnicodeAttribute(hash_key=True)
+    #     text_id = UnicodeAttribute(range_key=True)
+
+    # Attach the index to the model
+    # search_by_word_index = SearchByWordIndex()
 
 
-def setup_dynamodb():
-    # Create a DynamoDB client
-    dynamodb = boto3.resource('dynamodb',
-                            aws_access_key_id=AWS_ACCESS_KEY_ID,
-                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                            region_name='ap-south-1'
-                    )
-
-    # Define the table schema
-    table_name = 'Texts'
-    key_schema = [
-        {'AttributeName': 'text_id', 'KeyType': 'HASH'},
-        {'AttributeName': 'word', 'KeyType': 'RANGE'}
-    ]
-    attribute_definitions = [
-        {'AttributeName': 'text_id', 'AttributeType': 'S'},
-        {'AttributeName': 'word', 'AttributeType': 'S'}
-    ]
-    provisioned_throughput = {
-        'ReadCapacityUnits': 5,  # Adjust according to your needs
-        'WriteCapacityUnits': 5  # Adjust according to your needs
-    }
-
-    # Create the DynamoDB table
-    dynamodb.create_table(
-        TableName=table_name,
-        KeySchema=key_schema,
-        AttributeDefinitions=attribute_definitions,
-        ProvisionedThroughput=provisioned_throughput
-    )
-
-    # Create the Global Secondary Index
-    index_name = 'SearchByWord'
-    index_key_schema = [
-        {'AttributeName': 'word', 'KeyType': 'HASH'},
-        {'AttributeName': 'text_id', 'KeyType': 'RANGE'}
-    ]
-    projection = {'ProjectionType': 'ALL'}  # Adjust according to your needs
-
-    # Define the GSI update request
-    gsi_update_request = {
-        'Create': {
-            'IndexName': index_name,
-            'KeySchema': index_key_schema,
-            'Projection': projection,
-            'ProvisionedThroughput': provisioned_throughput
-        }
-    }
-
-    # Get the current table description to retrieve the latest attribute definitions
-    response = dynamodb.describe_table(TableName=table_name)
-    current_attribute_definitions = response['Table']['AttributeDefinitions']
-
-    # Update the table to add the Global Secondary Index
-    dynamodb.update_table(
-        TableName=table_name,
-        AttributeDefinitions=current_attribute_definitions,
-        GlobalSecondaryIndexUpdates=[gsi_update_request]
-    )
-
+if not Text.exists():
+    Text.create_table(read_capacity_units=READ_CAPACITY_UNIT, write_capacity_units=WRITE_CAPACITY_UNIT, wait=True, billing_mode='PROVISIONED')

@@ -13,8 +13,15 @@
     <h2>Search Results</h2>
     <ul>
       {% for result in search_results %}
-        <li><a href="{% url 'view_video' result.video_id %}">{{ result.video_title }} ({{ result.timestamp }})</a></li>
+       <li>
+        <strong>Content:</strong> {{ result.content }}<br>
+        <strong>Start Time:</strong> {{ result.start_time }}<br>
+        <strong>End Time:</strong> {{ result.end_time }}<br>
+        <strong>Video URL:</strong> <a href="{{ result.video_url }}">{{ result.video_url }}</a>
+      </li>
       {% endfor %}
     </ul>
-  {% endif %}
+  {% else %}
+  <p>It will take a minute to index the subtitle and save the video</p>
+{% endif %}
 {% endblock %}

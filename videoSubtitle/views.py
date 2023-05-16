@@ -1,21 +1,10 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from django.core.files.uploadedfile import TemporaryUploadedFile
-
-# import boto3
-
-# from django.core.files.base import ContentFile
-# from .task import save_subtitle_entries
-
-# from django.http import HttpResponse
-from .task import *
-
-# Create your views here.
+from .task import save_subtitle_entries, search
 
 
 class Home(View):
     def get(self, request):
-        # sleepy.delay(10)
         return render(request, "index.html")
 
 
@@ -24,20 +13,12 @@ class VideoUpload(View):
         return render(request, 'video.html')
 
     def post(self, request):
-        print(request.POST.get('title'), '')
-        print(request.FILES['video'], '')
         uploaded_file = request.FILES['video']
+        with open(f'temp_upload/{uploaded_file.name}', 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
 
-        if isinstance(uploaded_file, TemporaryUploadedFile):
-            # Access the temporary file and its properties
-            temp_file_path = uploaded_file.temporary_file_path()
-            save_subtitle_entries(temp_file_path, uploaded_file.name)
-            content_type = uploaded_file.content_type
-            size = uploaded_file.size
-            print(temp_file_path)
-            uploaded_file.file.close()
-            uploaded_file.close()
-
+        save_subtitle_entries.delay(f"temp_upload/{uploaded_file.name}", uploaded_file.name)
         return redirect('search_subtitles_form')
 
 
@@ -48,9 +29,17 @@ class SearchSubtitle(View):
         print(keywords)
 
         if keywords:
-            pass
-        # Perform the search logic here and populate the search_results list
-        # ...
+            search_results = []
+            hits = search(keywords)
+            for hit in hits:
+                source = hit['_source']
+                renamed_source = {
+                    'content': source['content'],
+                    'start_time': source['start_time'],
+                    'end_time': source['end_time'],
+                    'video_url': source['video_url']
+                }
+                search_results.append(renamed_source)
 
         context = {
             'keywords': keywords,

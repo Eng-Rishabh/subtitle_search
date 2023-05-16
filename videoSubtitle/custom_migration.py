@@ -1,5 +1,7 @@
 import boto3
-from myserver.settings import DB_TABLE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+from opensearchpy import OpenSearch, RequestsHttpConnection
+from requests_aws4auth import AWS4Auth
+from myserver.settings import AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID
 # from videoSubtitle.models import READ_CAPACITY_UNIT, WRITE_CAPACITY_UNIT, Subtitle
 
 
@@ -43,20 +45,70 @@ from myserver.settings import DB_TABLE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 #         Subtitle.create_table(wait=True)
 #     # print(my_table.item_count)
 
-import os
-import sys
-from django.core.management import execute_from_command_line
-from videoSubtitle.models import setup_dynamodb
+
+def start_indexing():
+    host = 'search-dynamodb-opensearch-url-my-ej7z72akx4etoq57qoq353t47i.ap-south-1.es.amazonaws.com'
+    region = 'ap-south-1'
+
+    service = 'es'
+    awsauth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region, service)
+
+    client = OpenSearch(
+        hosts=[{'host': host, 'port': 443}],
+        http_auth=awsauth,
+        use_ssl=True,
+        verify_certs=True,
+        connection_class=RequestsHttpConnection
+    )
+
+    mapping = {
+        'mappings': {
+            'properties': {
+                'content': {
+                    'type': 'text'
+                },
+                'start_time': {
+                    'type': 'keyword'
+                },
+                'end_time': {
+                    'type': 'keyword'
+                },
+                'video_url': {
+                    'type': 'keyword'
+                }
+            }
+        }
+    }
+
+    index_name = 'subtitles'
+    client.indices.create(index=index_name, body=mapping)
+
+    # for testing
+    # document = {
+    #     "content": 'The subtitle content',
+    #     "start_time": '10:00:00',
+    #     "end_time": '10:10:00',
+    #     "video_url": 'https://www.example.com/video.mp4'
+    # }
+    #
+    # client.index(index=index_name, body=document)
+    #
+    # search_query = 'subtitle'
+    # query = {
+    #     'query': {
+    #         'match': {
+    #             'content': search_query
+    #         }
+    #     }
+    # }
+    #
+    # response = client.search(index=index_name, body=query)
 
 
 def main():
     # Setup DynamoDB tables and indices
-
-    setup_dynamodb()
-
-    # Run Django management commands
-    # os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myserver.settings')
-    # execute_from_command_line(sys.argv)
+    pass
+    # setup_dynamodb()
 
 
 if __name__ == '__main__':
