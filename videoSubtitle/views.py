@@ -19,6 +19,7 @@ class VideoUpload(View):
                 destination.write(chunk)
 
         save_subtitle_entries.delay(f"temp_upload/{uploaded_file.name}", uploaded_file.name)
+        #save_subtitle_entries(f"temp_upload/{uploaded_file.name}", uploaded_file.name)
         return redirect('search_subtitles_form')
 
 

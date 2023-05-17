@@ -38,7 +38,7 @@ def save_subtitle_entries(input_file_path, name):
             output_file_path = temp_file.name
 
             # Run CCExtractor command
-            command = ['/Users/rishabh/Downloads/ccextractor/mac/ccextractor', '-out=srt', '-o', output_file_path,
+            command = ['ccextractor', '-out=srt', '-o', output_file_path,
                        input_file_path]
             subprocess.run(command, capture_output=True, text=True)
 
